@@ -10,3 +10,6 @@ dist/
 
 # Material de referência/planejamento (mantido só local)
 Agenda/
+
+.vercel
+.env*
