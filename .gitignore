@@ -1,0 +1,12 @@
+.DS_Store
+.thumbs.db
+node_modules/
+dist/
+.quasar/
+.env
+.env.local
+.env.*.local
+*.log
+
+# Material de referência/planejamento (mantido só local)
+Agenda/
