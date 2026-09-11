@@ -1,7 +1,11 @@
 import { computed } from 'vue'
 import { useDisponibilidadeStore, DIAS_SEMANA } from 'src/stores/disponibilidadeStore'
 import { useAgendamentosStore } from 'src/stores/agendamentosStore'
+import { STATUS_AGENDAMENTO } from 'src/constants/status'
 import dayjs from 'dayjs'
+
+// Fallback quando a disponibilidade do dia não define `duracao_slot`.
+const DURACAO_SLOT_PADRAO = 30
 
 export const useDisponibilidade = () => {
   const disponibilidadeStore = useDisponibilidadeStore()
@@ -17,6 +21,7 @@ export const useDisponibilidade = () => {
     const slots = []
     const horaInicio = disponibilidade.hora_inicio
     const horaFim = disponibilidade.hora_fim
+    const duracaoSlot = disponibilidade.duracao_slot || DURACAO_SLOT_PADRAO
 
     const [horaInicioHoras, horaInicioMinutos] = horaInicio.split(':').map(Number)
     const [horaFimHoras, horaFimMinutos] = horaFim.split(':').map(Number)
@@ -31,7 +36,7 @@ export const useDisponibilidade = () => {
 
     while (cursor.isBefore(fim)) {
       slots.push(cursor.format('HH:mm'))
-      cursor = cursor.add(30, 'minute')
+      cursor = cursor.add(duracaoSlot, 'minute')
     }
 
     return slots
@@ -41,7 +46,7 @@ export const useDisponibilidade = () => {
   const slotsOcupados = computed(() => {
     return agendamentosStore.lista_agendamentos
       .filter((agendamento) =>
-        ['agendado', 'confirmado'].includes(agendamento.status),
+        [STATUS_AGENDAMENTO.AGENDADO, STATUS_AGENDAMENTO.CONFIRMADO].includes(agendamento.status),
       )
       .map((agendamento) => agendamento.data_hora?.substring(0, 16))
   })

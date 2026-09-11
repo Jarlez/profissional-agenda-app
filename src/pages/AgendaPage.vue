@@ -79,7 +79,7 @@
                 @click.stop="verAgendamento(agendamentoNaCelula(dia.key, hora))"
               >
                 <div style="font-size:11.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                  :style="agendamentoNaCelula(dia.key, hora).status === 'realizado' ? 'text-decoration:line-through;opacity:0.7;' : ''"
+                  :style="agendamentoNaCelula(dia.key, hora).status === STATUS_AGENDAMENTO.REALIZADO ? 'text-decoration:line-through;opacity:0.7;' : ''"
                 >
                   {{ agendamentoNaCelula(dia.key, hora).contatos?.nome || 'Paciente' }}
                 </div>
@@ -152,7 +152,7 @@
                 @click.stop="verAgendamento(agendamentoNaCelulaDia(hora))"
               >
                 <div style="font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                  :style="agendamentoNaCelulaDia(hora).status === 'realizado' ? 'text-decoration:line-through;opacity:0.7;' : ''"
+                  :style="agendamentoNaCelulaDia(hora).status === STATUS_AGENDAMENTO.REALIZADO ? 'text-decoration:line-through;opacity:0.7;' : ''"
                 >
                   {{ agendamentoNaCelulaDia(hora).contatos?.nome || 'Paciente' }}
                 </div>
@@ -286,7 +286,7 @@
             <div>
               <div style="font-size:15px;font-weight:600;color:var(--text);">{{ agendamentoSelecionado.contatos?.nome || 'Paciente' }}</div>
               <span class="badge" :class="`badge-${agendamentoSelecionado.status}`">
-                <span class="dot"></span>{{ LABELS[agendamentoSelecionado.status] }}
+                <span class="dot"></span>{{ STATUS_LABELS[agendamentoSelecionado.status] }}
               </span>
             </div>
           </div>
@@ -299,10 +299,10 @@
 
           <!-- Ações de status -->
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-            <q-btn class="q-px-sm" v-if="agendamentoSelecionado.status === 'agendado'" flat no-caps dense size="sm" label="Confirmar" style="color:var(--status-confirmado);border:1px solid var(--status-confirmado);border-radius:var(--radius-sm);" @click="mudarStatus('confirmado')" />
-            <q-btn class="q-px-sm" v-if="['agendado','confirmado'].includes(agendamentoSelecionado.status)" flat no-caps dense size="sm" label="Realizado" style="color:var(--status-realizado);border:1px solid var(--status-realizado);border-radius:var(--radius-sm);" @click="iniciarRealizado" />
-            <q-btn class="q-px-sm" v-if="['agendado','confirmado'].includes(agendamentoSelecionado.status)" flat no-caps dense size="sm" label="Falta" style="color:var(--status-falta);border:1px solid var(--status-falta);border-radius:var(--radius-sm);" @click="mudarStatus('falta')" />
-            <q-btn class="q-px-sm" flat no-caps dense size="sm" label="Cancelar" style="color:var(--text-2);border:1px solid var(--border);border-radius:var(--radius-sm);" @click="mudarStatus('cancelado')" />
+            <q-btn class="q-px-sm" v-if="agendamentoSelecionado.status === STATUS_AGENDAMENTO.AGENDADO" flat no-caps dense size="sm" label="Confirmar" style="color:var(--status-confirmado);border:1px solid var(--status-confirmado);border-radius:var(--radius-sm);" @click="mudarStatus(STATUS_AGENDAMENTO.CONFIRMADO)" />
+            <q-btn class="q-px-sm" v-if="[STATUS_AGENDAMENTO.AGENDADO, STATUS_AGENDAMENTO.CONFIRMADO].includes(agendamentoSelecionado.status)" flat no-caps dense size="sm" label="Realizado" style="color:var(--status-realizado);border:1px solid var(--status-realizado);border-radius:var(--radius-sm);" @click="iniciarRealizado" />
+            <q-btn class="q-px-sm" v-if="[STATUS_AGENDAMENTO.AGENDADO, STATUS_AGENDAMENTO.CONFIRMADO].includes(agendamentoSelecionado.status)" flat no-caps dense size="sm" label="Falta" style="color:var(--status-falta);border:1px solid var(--status-falta);border-radius:var(--radius-sm);" @click="mudarStatus(STATUS_AGENDAMENTO.FALTA)" />
+            <q-btn class="q-px-sm" flat no-caps dense size="sm" label="Cancelar" style="color:var(--text-2);border:1px solid var(--border);border-radius:var(--radius-sm);" @click="mudarStatus(STATUS_AGENDAMENTO.CANCELADO)" />
           </div>
 
           <!-- Nota rápida pós-sessão -->
@@ -342,6 +342,8 @@ import { useAgendamentosStore }    from 'src/stores/agendamentosStore'
 import { useDisponibilidadeStore } from 'src/stores/disponibilidadeStore'
 import { usePacientesStore }       from 'src/stores/pacientesStore'
 import { formatarDataHora }        from 'src/utils/helpers'
+import { STATUS_LABELS, STATUS_AGENDAMENTO } from 'src/constants/status'
+import { DIAS_LABEL_CURTO }        from 'src/constants/dias'
 
 dayjs.locale('pt-br')
 
@@ -352,16 +354,11 @@ const agendamentosStore    = useAgendamentosStore()
 const disponibilidadeStore = useDisponibilidadeStore()
 const pacientesStore       = usePacientesStore()
 
-const HORAS      = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00']
-const DIAS_LABEL = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
-
-const LABELS = {
-  agendado:   'Agendado',
-  confirmado: 'Confirmado',
-  cancelado:  'Cancelado',
-  realizado:  'Realizado',
-  falta:      'Falta',
-}
+// TODO(agenda-horas): hoje a grade da agenda é fixa 07h-19h. Idealmente derivar do
+// menor `hora_inicio` e maior `hora_fim` das disponibilidades ativas do profissional
+// (disponibilidadeStore.lista_disponibilidades), para não cortar quem trabalha à noite
+// ou muito cedo.
+const HORAS = ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00']
 
 const COR_POR_POSICAO = ['var(--primary)','#8B5CF6','#A78BFA','#6E56CF','#10B981','#3B82F6']
 
@@ -399,7 +396,7 @@ const diasSemana = computed(() => {
     const data = inicio.add(dow, 'day')
     return {
       key:          data.format('YYYY-MM-DD'),
-      label:        DIAS_LABEL[dow],
+      label:        DIAS_LABEL_CURTO[dow],
       data:         data.date(),
       dataCompleta: data.format('YYYY-MM-DD'),
       hoje:         data.isSame(dayjs(), 'day'),
@@ -418,7 +415,7 @@ const mesSemana = computed(() => dayjs(diasSemana.value[0]?.dataCompleta).format
 
 // ─── Vista do dia ────────────────────────────────────────────────────────
 const subtituloDia    = computed(() => dayjs(diaAtualStr.value).format('dddd, D [de] MMMM [de] YYYY'))
-const diaDaSemanaLabel = computed(() => DIAS_LABEL[dayjs(diaAtualStr.value).day()])
+const diaDaSemanaLabel = computed(() => DIAS_LABEL_CURTO[dayjs(diaAtualStr.value).day()])
 const diaNumero       = computed(() => dayjs(diaAtualStr.value).date())
 
 const diaAnterior = () => { diaAtualStr.value = dayjs(diaAtualStr.value).subtract(1, 'day').format('YYYY-MM-DD') }
@@ -484,8 +481,8 @@ const corDoTipo = (tipoId) => {
 
 const estiloAgendamento = (ag) => {
   const cor    = corDoTipo(ag.tipo_atendimento_id)
-  const dimido = ag.status === 'realizado'
-  const falta  = ag.status === 'falta' || ag.status === 'cancelado'
+  const dimido = ag.status === STATUS_AGENDAMENTO.REALIZADO
+  const falta  = ag.status === STATUS_AGENDAMENTO.FALTA || ag.status === STATUS_AGENDAMENTO.CANCELADO
   return [
     `background: color-mix(in srgb, ${cor} 15%, var(--card));`,
     `border: 1px solid ${falta ? 'var(--status-falta)' : cor};`,
@@ -499,10 +496,10 @@ const resumoSemana = computed(() => {
   const lista = agendamentosNaSemana.value
   return [
     { label: 'Total',       valor: lista.length },
-    { label: 'Realizados',  valor: lista.filter(a => a.status === 'realizado').length },
-    { label: 'Confirmados', valor: lista.filter(a => a.status === 'confirmado').length },
-    { label: 'Aguardando',  valor: lista.filter(a => a.status === 'agendado').length },
-    { label: 'Faltas',      valor: lista.filter(a => a.status === 'falta').length },
+    { label: 'Realizados',  valor: lista.filter(a => a.status === STATUS_AGENDAMENTO.REALIZADO).length },
+    { label: 'Confirmados', valor: lista.filter(a => a.status === STATUS_AGENDAMENTO.CONFIRMADO).length },
+    { label: 'Aguardando',  valor: lista.filter(a => a.status === STATUS_AGENDAMENTO.AGENDADO).length },
+    { label: 'Faltas',      valor: lista.filter(a => a.status === STATUS_AGENDAMENTO.FALTA).length },
   ]
 })
 
@@ -582,7 +579,7 @@ const iniciarRealizado = () => {
 const salvarRealizado = async (comNota) => {
   salvandoNota.value = true
 
-  await mudarStatusDireto('realizado')
+  await mudarStatusDireto(STATUS_AGENDAMENTO.REALIZADO)
 
   if (comNota && notaRapida.value.trim()) {
     const paciente = pacientesStore.lista_pacientes.find(

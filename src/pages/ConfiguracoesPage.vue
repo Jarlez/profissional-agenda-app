@@ -37,7 +37,7 @@
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
               <span style="font-size:14px;font-weight:500;color:var(--text);">{{ secao.titulo }}</span>
-              <span v-if="secao.badge" style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;background:var(--status-confirmado-bg);color:var(--status-confirmado);">{{ secao.badge }}</span>
+              <span v-if="secao.badge" style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;background:color-mix(in srgb, var(--status-confirmado) 15%, var(--card));color:var(--status-confirmado);">{{ secao.badge }}</span>
             </div>
             <div class="t-small">{{ secao.desc }}</div>
           </div>
@@ -289,7 +289,8 @@ import { ref, reactive, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAuthStore }            from 'src/stores/authStore'
 import { useDisponibilidadeStore } from 'src/stores/disponibilidadeStore'
-import { DIAS_SEMANA }             from 'src/stores/disponibilidadeStore'
+import { DIAS_SEMANA }             from 'src/constants/dias'
+import { ESPECIALIDADES }          from 'src/constants/especialidades'
 import { formatarDataHora }        from 'src/utils/helpers'
 
 const $q                  = useQuasar()
@@ -298,6 +299,8 @@ const disponibilidadeStore = useDisponibilidadeStore()
 
 const secaoAtiva = ref(null)
 
+// TODO(whatsapp-badge): o badge "Conectado" está hardcoded — remover assim que a integração
+// com a Evolution API estiver funcionando e ler o status real de authStore.profissional.
 const SECOES = [
   { id: 'perfil',      icone: 'manage_accounts', titulo: 'Perfil profissional',     desc: 'Nome, foto, especialidade, bio, registro profissional.' },
   { id: 'whatsapp',    icone: 'mdi-whatsapp',     titulo: 'Conexão WhatsApp',        desc: 'QR Code da Evolution API. Status: conectado.',          badge: 'Conectado' },
@@ -305,14 +308,6 @@ const SECOES = [
   { id: 'tipos',       icone: 'medical_services', titulo: 'Tipos de atendimento',    desc: 'Avaliação 60min · Sessão 50min · Reavaliação 40min.' },
   { id: 'textos',      icone: 'notifications',    titulo: 'Textos automáticos',      desc: 'Personalize confirmação, lembrete 24h, lembrete 2h.' },
   { id: 'cancelamento',icone: 'event_busy',       titulo: 'Política de cancelamento',desc: 'Cancelamento até 4h antes sem custo.' },
-]
-
-const ESPECIALIDADES = [
-  { label: 'Fisioterapia',       value: 'fisioterapia' },
-  { label: 'Nutrição',           value: 'nutricao' },
-  { label: 'Personal Trainer',   value: 'personal_trainer' },
-  { label: 'Psicologia',         value: 'psicologia' },
-  { label: 'Outro',              value: 'outra' },
 ]
 
 const CORES_TIPO = ['#6E56CF','#8B76F5','#A78BFA','#8B5CF6','#3B82F6','#10B981','#F59E0B','#EF4444']

@@ -29,7 +29,11 @@ export default route(function () {
       return proximo({ name: 'dashboard' })
     }
 
-    // Redireciona para onboarding se ainda não foi concluído
+    // TODO(onboarding): esta flag hoje vive em localStorage, ou seja, se o usuário limpar
+    // o cache do navegador ou trocar de dispositivo, o onboarding aparece de novo.
+    // O correto é adicionar uma coluna `onboarding_concluido boolean` em `profissionais`
+    // (nova migration) e usar `authStore.profissional?.onboarding_concluido` aqui e em
+    // `marcarConcluido()` na OnboardingPage.vue.
     if (para.meta.requerAuth && authStore.estaAutenticado && para.name !== 'onboarding') {
       const userId = authStore.usuario?.id
       if (userId && !localStorage.getItem(`onboarding_done_${userId}`)) {

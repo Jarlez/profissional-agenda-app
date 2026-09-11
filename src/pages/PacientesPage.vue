@@ -36,7 +36,7 @@
 
       <div class="seg">
         <button :class="{ active: tagFiltro === '' }" @click="tagFiltro = ''">Todos</button>
-        <button v-for="t in TAGS" :key="t.id" :class="{ active: tagFiltro === t.id }" @click="tagFiltro = t.id">{{ t.label }}</button>
+        <button v-for="t in TAGS_PACIENTE" :key="t.id" :class="{ active: tagFiltro === t.id }" @click="tagFiltro = t.id">{{ t.label }}</button>
       </div>
     </div>
 
@@ -112,7 +112,7 @@
               class="atende-tag"
               :class="{ 'atende-tag--primary': tag === 'em-tratamento' || tag === 'novo' }"
             >
-              {{ TAGS.find(t => t.id === tag)?.label || tag }}
+              {{ TAGS_PACIENTE.find(t => t.id === tag)?.label || tag }}
             </span>
           </div>
 
@@ -162,7 +162,7 @@
             <div class="t-small" style="margin-bottom:6px;font-weight:500;">Tags</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
               <span
-                v-for="tag in TAGS"
+                v-for="tag in TAGS_PACIENTE"
                 :key="tag.id"
                 class="atende-tag cursor-pointer"
                 :class="{ 'atende-tag--primary': form.tags.includes(tag.id) }"
@@ -207,6 +207,8 @@ import { useAuthStore }          from 'src/stores/authStore'
 import { usePacientesStore }    from 'src/stores/pacientesStore'
 import { useAgendamentosStore } from 'src/stores/agendamentosStore'
 import { formatarDataRelativa } from 'src/utils/helpers'
+import { TAGS_PACIENTE } from 'src/constants/tags'
+import { STATUS_AGENDAMENTO } from 'src/constants/status'
 
 const $q     = useQuasar()
 const router = useRouter()
@@ -220,14 +222,6 @@ const dialogAberto = ref(false)
 const salvando     = ref(false)
 
 const carregando = computed(() => pacientesStore.carregando)
-
-const TAGS = [
-  { id: 'particular',    label: 'Particular' },
-  { id: 'convenio',      label: 'Convênio' },
-  { id: 'em-tratamento', label: 'Em tratamento' },
-  { id: 'alta',          label: 'Alta' },
-  { id: 'novo',          label: 'Novo' },
-]
 
 const formVazio = () => ({
   nome:            '',
@@ -263,7 +257,7 @@ const idadePaciente = (paciente) => {
 
 const ultimoAtendimento = (paciente) => {
   const lista = agendamentosStore.lista_agendamentos.filter(
-    a => a.contato_id === paciente.contato_id && a.status === 'realizado'
+    a => a.contato_id === paciente.contato_id && a.status === STATUS_AGENDAMENTO.REALIZADO
   )
   if (!lista.length) return '—'
   const ultimo = lista.sort((a, b) => new Date(b.data_hora) - new Date(a.data_hora))[0]
@@ -272,7 +266,7 @@ const ultimoAtendimento = (paciente) => {
 
 const totalSessoes = (paciente) =>
   agendamentosStore.lista_agendamentos.filter(
-    a => a.contato_id === paciente.contato_id && a.status === 'realizado'
+    a => a.contato_id === paciente.contato_id && a.status === STATUS_AGENDAMENTO.REALIZADO
   ).length
 
 const toggleTag = (tagId) => {

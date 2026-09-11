@@ -13,3 +13,4 @@ Agenda/
 
 .vercel
 .env*
+!.env.example

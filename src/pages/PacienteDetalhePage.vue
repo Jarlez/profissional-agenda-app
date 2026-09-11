@@ -43,7 +43,7 @@
                   class="atende-tag"
                   :class="{ 'atende-tag--primary': tag === 'em-tratamento' }"
                 >
-                  {{ TAGS.find(t => t.id === tag)?.label || tag }}
+                  {{ TAGS_PACIENTE.find(t => t.id === tag)?.label || tag }}
                 </span>
               </div>
             </div>
@@ -132,7 +132,7 @@
                 {{ ag.tipos_atendimento?.nome || ag.tipo_atendimento?.nome || 'Atendimento' }}
               </span>
               <span class="badge" :class="`badge-${ag.status}`">
-                <span class="dot"></span>{{ LABELS[ag.status] }}
+                <span class="dot"></span>{{ STATUS_LABELS[ag.status] }}
               </span>
               <q-icon name="chevron_right" size="14px" style="color:var(--text-3);" />
             </div>
@@ -254,6 +254,8 @@ import { usePacientesStore }    from 'src/stores/pacientesStore'
 import { useAgendamentosStore } from 'src/stores/agendamentosStore'
 import { useAnexos }            from 'src/composables/useAnexos'
 import { formatarData, formatarHora, formatarTamanhoArquivo } from 'src/utils/helpers'
+import { STATUS_LABELS, STATUS_AGENDAMENTO } from 'src/constants/status'
+import { TAGS_PACIENTE } from 'src/constants/tags'
 
 const $q    = useQuasar()
 const route = useRoute()
@@ -295,24 +297,8 @@ const historico = computed(() =>
 )
 
 const totalSessoes = computed(() =>
-  historico.value.filter(a => a.status === 'realizado').length
+  historico.value.filter(a => a.status === STATUS_AGENDAMENTO.REALIZADO).length
 )
-
-const LABELS = {
-  agendado:   'Agendado',
-  confirmado: 'Confirmado',
-  cancelado:  'Cancelado',
-  realizado:  'Realizado',
-  falta:      'Falta',
-}
-
-const TAGS = [
-  { id: 'particular',    label: 'Particular' },
-  { id: 'convenio',      label: 'Convênio' },
-  { id: 'em-tratamento', label: 'Em tratamento' },
-  { id: 'alta',          label: 'Alta' },
-  { id: 'novo',          label: 'Novo' },
-]
 
 const iconeAnexo = (mime) => {
   if (!mime) return 'attach_file'

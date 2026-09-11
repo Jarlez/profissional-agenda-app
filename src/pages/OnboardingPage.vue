@@ -38,6 +38,11 @@
           </div>
         </div>
 
+        <!--
+          TODO(onboarding-whatsapp): este passo é 100% ilustrativo. O QR code é apenas
+          um ícone (não gera QR real da Evolution API) e o botão só pula para o próximo passo.
+          Ligar à Evolution API assim que a integração de WhatsApp for implementada.
+        -->
         <!-- ── Passo 2: WhatsApp ─────────────────────────────── -->
         <div v-if="passo === 2" style="text-align:center;">
           <div style="width:56px;height:56px;border-radius:14px;background:var(--primary-soft);color:var(--primary-text);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
@@ -120,6 +125,7 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore }            from 'src/stores/authStore'
 import { useDisponibilidadeStore } from 'src/stores/disponibilidadeStore'
+import { DIAS_SEMANA_UTEIS }       from 'src/constants/dias'
 
 const router               = useRouter()
 const $q                   = useQuasar()
@@ -129,15 +135,6 @@ const disponibilidadeStore = useDisponibilidadeStore()
 const passo   = ref(1)
 const salvando = ref(false)
 const copiado = ref(false)
-
-const DIAS_SEMANA_UTEIS = [
-  { value: 1, label: 'Segunda-feira' },
-  { value: 2, label: 'Terça-feira' },
-  { value: 3, label: 'Quarta-feira' },
-  { value: 4, label: 'Quinta-feira' },
-  { value: 5, label: 'Sexta-feira' },
-  { value: 6, label: 'Sábado' },
-]
 
 const horarios = reactive(
   Object.fromEntries(

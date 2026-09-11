@@ -180,7 +180,7 @@
                   </div>
                 </div>
                 <span class="badge" :class="`badge-${ag.status}`">
-                  <span class="dot"></span>{{ LABELS[ag.status] }}
+                  <span class="dot"></span>{{ STATUS_LABELS[ag.status] }}
                 </span>
                 <q-icon name="chevron_right" size="14px" style="color:var(--text-3);" />
               </div>
@@ -253,6 +253,7 @@ import { useAuthStore }         from 'src/stores/authStore'
 import { useAgendamentosStore } from 'src/stores/agendamentosStore'
 import { usePacientesStore }    from 'src/stores/pacientesStore'
 import { formatarHora, formatarDataExtenso } from 'src/utils/helpers'
+import { STATUS_LABELS, STATUS_AGENDAMENTO } from 'src/constants/status'
 
 const router = useRouter()
 const authStore         = useAuthStore()
@@ -261,15 +262,7 @@ const pacientesStore    = usePacientesStore()
 
 const linkCopiado = ref(false)
 
-const LABELS = {
-  agendado:   'Agendado',
-  confirmado: 'Confirmado',
-  cancelado:  'Cancelado',
-  realizado:  'Realizado',
-  falta:      'Falta',
-}
-
-const DIAS_SEMANA = [
+const DIAS_CHART = [
   { dow: 1, label: 'Seg' },
   { dow: 2, label: 'Ter' },
   { dow: 3, label: 'Qua' },
@@ -294,8 +287,8 @@ const kpis = computed(() => {
   const lista = agendamentosStore.lista_agendamentos
   return {
     totalMes:   lista.length,
-    faltas:     lista.filter(a => a.status === 'falta').length,
-    realizados: lista.filter(a => a.status === 'realizado').length,
+    faltas:     lista.filter(a => a.status === STATUS_AGENDAMENTO.FALTA).length,
+    realizados: lista.filter(a => a.status === STATUS_AGENDAMENTO.REALIZADO).length,
     pacientes:  pacientesStore.lista_pacientes.length,
   }
 })
@@ -309,7 +302,7 @@ const chartSemana = computed(() => {
   const hoje         = dayjs()
   const inicioSemana = hoje.startOf('week')
   const lista        = agendamentosStore.lista_agendamentos
-  return DIAS_SEMANA.map(dia => {
+  return DIAS_CHART.map(dia => {
     const data  = inicioSemana.add(dia.dow, 'day')
     const total = lista.filter(a => dayjs(a.data_hora).isSame(data, 'day')).length
     return { ...dia, total, hoje: data.isSame(hoje, 'day') }
@@ -325,7 +318,7 @@ let timerAgora = null
 
 const proximoAtendimento = computed(() => {
   return agendamentosHoje.value
-    .filter(a => ['agendado', 'confirmado'].includes(a.status) && dayjs(a.data_hora).isAfter(agora.value))
+    .filter(a => [STATUS_AGENDAMENTO.AGENDADO, STATUS_AGENDAMENTO.CONFIRMADO].includes(a.status) && dayjs(a.data_hora).isAfter(agora.value))
     .sort((a, b) => new Date(a.data_hora) - new Date(b.data_hora))[0] || null
 })
 
@@ -335,7 +328,7 @@ const countdownProximo = computed(() => {
 })
 
 const countdownItem = (ag) => {
-  if (!['agendado', 'confirmado'].includes(ag.status)) return ''
+  if (![STATUS_AGENDAMENTO.AGENDADO, STATUS_AGENDAMENTO.CONFIRMADO].includes(ag.status)) return ''
   const diff = dayjs(ag.data_hora).diff(agora.value, 'minute')
   if (diff < 0 || diff > 120) return ''
   return `em ${formatarCountdown(diff)}`

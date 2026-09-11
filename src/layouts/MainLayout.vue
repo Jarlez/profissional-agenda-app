@@ -210,6 +210,11 @@ const itensMenu = [
 
 const rotaAtiva = computed(() => route.name)
 
+// TODO(whatsapp): a coluna `whatsapp_conectado` ainda não existe na tabela `profissionais`
+// (ver supabase/migrations/001_profissionais.sql). Enquanto a integração com a Evolution API
+// não estiver implementada, este computed sempre resolve para `false` → o badge do header
+// mostra "Desconectado" para todos os usuários. Adicionar a coluna via nova migration e
+// atualizá-la a partir do webhook da Evolution.
 const whatsappConectado = computed(() => !!authStore.profissional?.whatsapp_conectado)
 
 const iniciais = computed(() => {
